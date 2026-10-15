@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang = "vi">
+    <head>
+        <meta charset = "UTF-8">
+        <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
+        <title>BÌNH CHỌN 20/10</title>
+        <style>
+            body {
+                background: linear-gradient(
+                    to right,
+                    #FFE5EE,
+                    #FEF8FB,
+                    #F4E8FF
+                );
+                font-family: Arial, sans-serif;
+                color: #332A33;
+                margin: 0;
+                padding: 0;
+            }
+            .site-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+                padding: 20px max(5%, calc((100% - 1100px) / 2));
+                border-bottom: 1px solid #F5E1E8;
+                background: #FFFFFFC9;
+                backdrop-filter: blur(8px);
+            }
+            .brand {
+                color: #B83D6B;
+                font-weight: 800;
+                letter-spacing: .04em;
+            }
+            .tag {
+                background: #FFF0F5;
+                color: #B83D6B;
+                border: 1px solid #F1D4DF;
+                border-radius: 999px;
+                padding: 8px 12px;
+                font-size: 12px;
+                font-weight: 700;
+            }
+            .title {
+                text-align: center;
+                color: #A93E68;
+            }
+            .rules {
+                color: #B7928C;
+            }
+            .section-heading {
+                margin-bottom: 20px;
+            }
+            .section-heading h2 {
+                margin: 0 0 6px;
+                font-size: 24px;
+                font-weight: 700;
+                color: #5B4457;
+            }
+            .section-heading p {
+                margin: 0;
+                font-size: 13px;
+                color: #8C7180;
+            }
+            .category-grid {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .category-button {
+                padding: 16px;
+                text-align: left;
+                background: #FFFFFF;
+                border: 1px solid #F1D4DF;
+                border-radius: 16px;
+                color: #493640;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: 0.2s ease;
+            }
+            .category-button p {
+                color: #B83D6B;
+                font-size: 10px;
+            }
+            .category-button:hover {
+                background: #FFF0F5;
+                border-color: #D98BA8;
+                transform: translateY(-2px);
+            }
+            @media (max-width: 420px) {
+                .category-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            .back-button {
+                margin: 10px 0 20px;
+                padding: 10px 16px;
+                background: #FFFFFF;
+                color: #B83D6B;
+                border: 1px solid #F1D4DF;
+                border-radius: 10px;
+                cursor: pointer;
+            }
+            .choice-list {
+                display: grid;
+                gap: 12px;
+                margin: 20px 0;
+            }
+            .choice {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px;
+                background: #FFFFFF;
+                border: 1px solid #F1D4DF;
+                border-radius: 12px;
+                cursor: pointer;
+            }
+            .choice input {
+                accent-color: #B83D6B;
+            }
+            .confirm-button {
+                padding: 12px 20px;
+                background: #B83D6B;
+                color: #FFFFFF;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <header class = "site-header">
+            <div class = "brand">9A1</div>
+            <div class = "tag">© Bản quyền thuộc về 9A1</div>
+        </header>
+        <div class = "title">
+            <h1>🌷BÌNH CHỌN 20/10🌷</h1>
+        </div>
+        <div class = "rules">
+            <p>
+                Hãy cùng tham gia bình chọn cho mỗi hạng mục dưới đây nhé! Vui lòng đọc kĩ thể lệ để mỗi lá phiếu đều có ý nghĩa
+            </p>
+            <ol>
+                <li>Mỗi người chỉ được phép bình chọn duy nhất 1 lần ở mỗi hạng mục.</li>
+                <li>Khi tham gia bình chọn, phải nhập chính xác họ tên để xác nhận danh tính.</li>
+                <li>Nếu nhiều người sử dụng chung 1 thiết bị, hãy bình chọn lần lượt theo thứ tự.</li>
+                <li>Sau khi hoàn tất bình chọn, hãy thoát ra trước khi người tiếp theo bắt đầu.</li>
+                <li>Không được bình chọn thay người khác hoặc sử dụng tên người khác.</li>
+                <li>Vui lòng kiểm tra kĩ lựa chọn trước khi xác nhận bình chọn.</li>
+            </ol>
+        </div>
+        <section class = "category-section">
+            <div class = "section-heading">
+                <h2>Chọn nội dung bình chọn</h2>
+                <p>16 hạng mục · Nhấn để mở</p>
+            </div>
+            <div class = "category-grid">
+                <button class = "category-button" onclick = "openCategory(0)">
+                    01 · Nguyễn Bảo Châu
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(1)">
+                    02 · Hoàng Khánh Giang
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(2)">
+                    03 · Trịnh Thị Hà Giang
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(3)">
+                    04 · Phạm Ngọc Ngân Hà
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(4)">
+                    05 · Tô Thị Hải Hà
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(5)">
+                    06 · Nguyễn Ngọc Hiền
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(6)">
+                    07 · Nguyễn Thị Thu Hiền
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(7)">
+                    08 · Nguyễn Linh Lan
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(8)">
+                    09 · Phạm Ngọc Linh
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(9)">
+                    10 · Nguyễn Ngọc Tuệ Minh
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(10)">
+                    11 · Phạm Tạ Bảo Ngọc
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(11)">
+                    12 · Nguyễn Thị Minh Nguyệt
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(12)">
+                    13 · Nguyễn Nguyễn Linh Nhi
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(13)">
+                    14 · Tô Anh Thư
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(14)">
+                    15 · Lê Phương Vi
+                    <p>Bình chọn →</p>
+                </button>
+                <button class = "category-button" onclick = "openCategory(15)">
+                    16 · Nguyễn Bảo Vy
+                    <p>Bình chọn →</p>
+                </button>
+            </div>
+        </section>
+        <section id = "voting-page" hidden>
+            <button onclick = "goBack()" class = "back-button">
+                ← Quay lại danh sách
+            </button>
+            <h2 id = "voting-title">Tên hạng mục</h2>
+            <p>Hãy chọn một người bạn muốn bình chọn</p>
+            <div class = "choice-list">
+                <label class = "choice">
+                    <input type = "radio" name = "candidate" value = "1">
+                    Lựa chọn 1
+                </label>
+                <label class = "choice">
+                    <input type = "radio" name = "candidate" value = "2">
+                    Lựa chọn 2
+                </label>
+                <label class = "choice">
+                    <input type = "radio" name = "candidate" value = "3">
+                    Lựa chọn 3
+                </label>
+            </div>
+            <button class = "confirm-button" onclick = "confirmVote()">
+                Xác nhận lựa chọn
+            </button>
+        </section>
+        <script>
+            const categories = [
+                "Nguyễn Bảo Châu",
+                "Hoàng Khánh Giang",
+                "Trịnh Thị Hà Giang",
+                "Phạm Ngọc Ngân Hà",
+                "Tô Thị Hải Hà",
+                "Nguyễn Ngọc Hiền",
+                "Nguyễn Thị Thu Hiền",
+                "Nguyễn Linh Lan",
+                "Phạm Ngọc Linh",
+                "Nguyễn Ngọc Tuệ Minh",
+                "Phạm Tạ Bảo Ngọc",
+                "Nguyễn Thị Minh Nguyệt",
+                "Nguyễn Nguyễn Linh Nhi",
+                "Tô Anh Thư",
+                "Lê Phương Vi",
+                "Nguyễn Bảo Vy"
+            ]
+            function openCategory(index) {
+                document.querySelector(".category-section").hidden = true;
+                document.querySelector(".title").hidden = true;
+                document.querySelector(".rules").hidden = true;
+                document.getElementById("voting-page").hidden = false;
+                document.getElementById("voting-title").textContent = categories[index];
+            }
+            function goBack() {
+                document.querySelector(".category-section").hidden = false;
+                document.querySelector(".title").hidden = false;
+                document.querySelector(".rules").hidden = false;
+                document.getElementById("voting-page").hidden = true;
+                const selected = document.querySelector('input[name="candidate"]:checked');
+                if (selected) {
+                    selected.checked = false;
+                }
+            }
+            function confirmVote() {
+                const selected = document.querySelector('input[name="candidate"]:checked');
+                if (!selected) {
+                    alert("Vui lòng chọn một lựa chọn!");
+                    return;
+                }
+                alert("Bạn đã chọn lựa chọn " + selected.value);
+            }
+        </script>
+    </body>
+</html>
