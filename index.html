@@ -183,19 +183,67 @@
                 outline: 2px solid #B83D6B;
                 outline-offset: 3px;
             }
+            #admin-button {
+                padding: 10px 18px;
+                border: 1px solid #FFFFFF;
+                border-radius: 12px;
+                background: linear-gradient(135deg, #8B5CF6, #C084FC);
+                color: #FFFFFF;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+                box-shadow: 0 4px 12px #8B5CF6;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            #admin-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 7px 18px #8B5CF6;
+            }
+            #admin-button:active {
+                transform: scale(0.97);
+            }
+            #admin-button:focus-visible {
+                outline: 3px solid #F9A8D4;
+                outline-offset: 3px;
+            }
+            .header-right {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            #load-stats-button,
+            #back-to-voting-button {
+                padding: 11px 18px;
+                border: none;
+                border-radius: 12px;
+                font-weight: 700;
+                cursor: pointer;
+            }
             @media (max-width: 600px) {
                 .site-header {
                     padding: 16px 5%;
                     align-items: flex-start;
                 }
                 .header-right {
-                    flex-direction: column;
-                    align-items: flex-end;
                     gap: 8px;
                 }
                 .tag {
                     font-size: 10px;
                     text-align: right;
+                }
+                #admin-page {
+                    margin: 20px auto;
+                    padding: 20px;
+                    border-radius: 18px;
+                }
+                #admin-page h2 {
+                    font-size: 23px;
+                }
+                #admin-button {
+                    padding: 9px 12px;
+                    font-size: 13px;
                 }
             }
         </style>
@@ -204,10 +252,15 @@
     <body>
         <header class = "site-header" hidden>
             <div class = "brand">9A1</div>
-            <div class = "tag">© Bản quyền thuộc về Trần Vũ Phong 9A1</div>
-            <button id = "logout-button" class = "logout-button" hidden>
-                Đăng xuất
-            </button>
+            <div class = "header-right">
+                <div class = "tag">© Bản quyền thuộc về Trần Vũ Phong 9A1</div>
+                <button id = "logout-button" class = "logout-button" hidden>
+                    Đăng xuất
+                </button>
+                <button id = "admin-button" hidden>
+                    Trang quản trị
+                </button>
+            </div>
         </header>
         <section id = "login-page">
             <h2>Đăng nhập bình chọn</h2>
@@ -220,6 +273,14 @@
                 <button type = "submit">Đăng nhập</button>
                 <p id = "login-message" role = "status"></p>
             </form>
+        </section>
+        <section id = "admin-page" hidden>
+            <h2>Trang quản trị 9A1</h2>
+            <p>Thống kê kết quả bình chọn 20/10</p>
+            <button id = "back-to-voting-button">Quay lại bình chọn</button>
+            <button id = "load-stats-button">Xem thống kê</button>
+            <p id = "admin-message" role = "status"></p>
+            <div id = "stats-container"></div>
         </section>
         <div class = "title" hidden>
             <h1>🌷BÌNH CHỌN 20/10🌷</h1>
@@ -469,9 +530,25 @@
                     message.textContent = "Đăng nhập thất bại. Hãy kiểm tra mã học sinh và mật khẩu";
                     return;
                 }
+                message.textContent = "Đang kiểm tra quyền tài khoản...";
+                const { data: isAdmin, error: roleError } = await supabaseClient.rpc("is_vote_admin");
+                if (roleError) {
+                    message.textContent = "Đăng nhập được nhưng không kiểm tra được quyền tài khoản";
+                    return;
+                }
                 message.textContent = "Đăng nhập thành công!";
-                showVotingHome();
                 document.getElementById("logout-button").hidden = false;
+                if (isAdmin) {
+                    showVotingHome();
+                    document.getElementById("admin-page").hidden = true;
+                    document.getElementById("logout-button").hidden = false;
+                    document.getElementById("admin-button").hidden = false;
+                } else {
+                    document.getElementById("admin-page").hidden = true;
+                    document.getElementById("admin-button").hidden = true;
+                    showVotingHome();
+                    document.getElementById("logout-button").hidden = false;
+                }
             });
             const categories = [
                 "Nguyễn Bảo Châu",
@@ -499,7 +576,9 @@
                 document.querySelector(".category-section").hidden = false;
                 document.getElementById("voting-page").hidden = true;
             }
+            let currentCategoryIndex = -1;
             function openCategory(index) {
+                currentCategoryIndex = index;
                 document.querySelector(".category-section").hidden = true;
                 document.querySelector(".title").hidden = true;
                 document.querySelector(".rules").hidden = true;
@@ -516,13 +595,48 @@
                     selected.checked = false;
                 }
             }
-            function confirmVote() {
+            async function confirmVote() {
                 const selected = document.querySelector('input[name="candidate"]:checked');
                 if (!selected) {
-                    alert("Vui lòng chọn một lựa chọn!");
+                    alert("Vui lòng chọn một lựa chọn");
                     return;
                 }
-                alert("Bạn đã chọn lựa chọn " + selected.value);
+                if (currentCategoryIndex < 0 || currentCategoryIndex >= categories.length) {
+                    alert("Không xác nhận được hạng mục bình chọn");
+                    return;
+                }
+                const button = document.querySelector(".confirm-button");
+                button.disabled = true;
+                button.textContent = "Đang gửi phiếu...";
+                try {
+                    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                    if (userError || !user) {
+                        alert("Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại");
+                        return;
+                    }
+                    const { error } = await supabaseClient.from("votes").insert({
+                        user_id: user.id,
+                        category_id: currentCategoryIndex,
+                        candidate_id: Number(selected.value)
+                    });
+                    if (error) {
+                        console.error("Lỗi lưu phiếu:", error);
+                        if (error.code === "23505") {
+                            alert("Bạn đã bình chọn hạng mục này rồi");
+                        } else {
+                            alert("Không thể lưu phiếu. Vui lòng thử lại");
+                        }
+                        return;
+                    }
+                    alert("Bình chọn thành công");
+                    goBack();
+                } catch (error) {
+                    console.error("Lỗi khi gửi phiếu:", error);
+                    alert("Đã xảy ra lỗi kết nối. Vui lòng thử lại");
+                } finally {
+                    button.disabled = false;
+                    button.textContent = "Xác nhận lựa chọn";
+                }
             }
             document.getElementById("logout-button").addEventListener("click", async function() {
                 const { error } = await supabaseClient.auth.signOut();
@@ -531,6 +645,8 @@
                     return;
                 }
                 document.getElementById("login-page").hidden = false;
+                document.getElementById("admin-page").hidden = true;
+                document.getElementById("admin-button").hidden = true;
                 document.querySelector(".site-header").hidden = true;
                 document.querySelector(".title").hidden = true;
                 document.querySelector(".rules").hidden = true;
@@ -543,6 +659,19 @@
                     selected.checked = false;
                 }
                 document.getElementById("login-message").textContent = "";
+            });
+            const adminButton = document.getElementById("admin-button");
+            const backToVotingButton = document.getElementById("back-to-voting-button");
+            adminButton.addEventListener("click", function () {
+                document.querySelector(".title").hidden = true;
+                document.querySelector(".rules").hidden = true;
+                document.querySelector(".category-section").hidden = true;
+                document.getElementById("voting-page").hidden = true;
+                document.getElementById("admin-page").hidden = false;
+            });
+            backToVotingButton.addEventListener("click", function() {
+                document.getElementById("admin-page").hidden = true;
+                showVotingHome();
             });
         </script>
     </body>
