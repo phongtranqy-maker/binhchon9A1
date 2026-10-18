@@ -221,6 +221,48 @@
                 font-weight: 700;
                 cursor: pointer;
             }
+            #stats-container {
+                margin-top: 24px;
+            }
+            .stats-category {
+                margin-bottom: 24px;
+                padding: 20px;
+                background: #FFFFFF;
+                border: 1px solid #F1D4DF;
+                border-radius: 16px;
+                overflow-x: auto;
+            }
+            .stats-category h3 {
+                margin-top: 0;
+                color: #A93E68;
+            }
+            .stats-table {
+                width: 100%;
+                border-collapse: collapse;
+                background: #FFFFFF;
+            }
+            .stats-table th,
+            .stats-table td {
+                padding: 12px;
+                border-bottom: 1px solid #F1D4DF;
+                text-align: left;
+            }
+            .stats-table th {
+                background: #FFF0F5;
+                color: #B83D6B;
+            }
+            .stats-table th:last-child,
+            .stats-table td:last-child {
+                text-align: center;
+            }
+            .stats-total {
+                color: #B83D6B;
+                font-weight: 700;
+            }
+            #admin-message {
+                color: #A93E68;
+                font-weight: 600;
+            }
             @media (max-width: 600px) {
                 .site-header {
                     padding: 16px 5%;
@@ -510,6 +552,30 @@
                 SUPABASE_URL,
                 SUPABASE_KEY
             );
+            async function checkLogin() {
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error) {
+                    console.error("Lỗi kiểm tra đăng nhập:", error);
+                    return;
+                }
+                if (session) {
+                    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+                    if (userError || !user) {
+                        return;
+                    }
+                    const { data: isAdmin, error: adminError } = await supabaseClient.rpc("is_vote_admin");
+                    if (adminError) {
+                        console.error("Lỗi kiểm tra quyền quản trị:", adminError);
+                    }
+                    document.getElementById("login-page").hidden = true;
+                    document.getElementById("logout-button").hidden = false;
+                    if (isAdmin) {
+                        document.getElementById("admin-button").hidden = false;
+                    }
+                    showVotingHome();
+                }
+            }
+            checkLogin();
             const loginForm = document.getElementById("login-form");
             loginForm.addEventListener("submit", async function(event) {
                 event.preventDefault();
@@ -660,6 +726,95 @@
                 }
                 document.getElementById("login-message").textContent = "";
             });
+            async function loadStats() {
+                const message = document.getElementById("admin-message");
+                const container = document.getElementById("stats-container");
+                message.textContent = "Đang tải thống kê...";
+                container.innerHTML = "";
+                const { data: votes, error } = await supabaseClient.from("votes").select("category_id, candidate_id");
+                if (error) {
+                    console.error("Lỗi tải thống kê:", error);
+                    message.textContent = "Không thể tải thống kê. Hãy kiểm tra quyền truy cập";
+                    return;
+                }
+                const candidateLabels = Array.from(document.querySelectorAll(".choice"));
+                const candidates = candidateLabels.map(label => {
+                    const input = label.querySelector('input[type="radio"]');
+                    return {
+                        id: Number(input.value),
+                        name: label.textContent.trim()
+                    };
+                }).filter(candidate => Number.isFinite(candidate.id));
+                const counts = {};
+                const categoryTotals = {};
+                for (const vote of votes) {
+                    const categoryId = Number(vote.category_id);
+                    const candidateId = Number(vote.candidate_id);
+                    const key = categoryId + "-" + candidateId;
+                    if (counts[key] === undefined) {
+                        counts[key] = 0;
+                    }
+                    counts[key]++;
+                    if (categoryTotals[categoryId] === undefined) {
+                        categoryTotals[categoryId] = 0;
+                    }
+                    categoryTotals[categoryId]++;
+                }
+                for (let i = 0; i < categories.length; i++) {
+                    const categoryId = i;
+                    const total = categoryTotals[categoryId] || 0;
+                    const rankedCandidates = candidates.map(candidate => {
+                        const key = categoryId + "-" + candidate.id;
+                        const voteCount = counts[key] || 0;
+                        return {
+                            id: candidate.id,
+                            name: candidate.name,
+                            votes: voteCount,
+                            percent: total === 0 ? 0 : (voteCount / total * 100)
+                        };
+                    });
+                    rankedCandidates.sort((a, b) => {
+                        if (b.votes != a.votes) {
+                            return b.votes - a.votes;
+                        }
+                        return a.id - b.id;
+                    });
+                    let html = `
+                        <div class = "stats-category">
+                            <h3>${categories[i]}</h3>
+                            <p>Tổng số phiếu: ${total}</p>
+                            <table class = "stats-table">
+                                <thead>
+                                    <tr>
+                                        <th>Hạng</th>
+                                        <th>Ứng viên</th>
+                                        <th>Số phiếu</th>
+                                        <th>Tỉ lệ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    for (let j = 0; j < rankedCandidates.length; j++) {
+                        const candidate = rankedCandidates[j];
+                        html += `
+                            <tr>
+                                <td>${j + 1}</td>
+                                <td>${candidate.name}</td>
+                                <td>${candidate.votes}</td>
+                                <td>${candidate.percent.toFixed(1)}%</td>
+                            </tr>
+                        `;
+                    }
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                }
+                message.textContent = "Đã tải thống kê thành công";
+            }
+            document.getElementById("load-stats-button").addEventListener("click", loadStats);
             const adminButton = document.getElementById("admin-button");
             const backToVotingButton = document.getElementById("back-to-voting-button");
             adminButton.addEventListener("click", function () {
