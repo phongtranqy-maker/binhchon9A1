@@ -5,17 +5,41 @@
         <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
         <title>BÌNH CHỌN 20/10</title>
         <style>
+            html {
+                min-height: 100%;
+            }
             body {
+                min-height: 100vh;
                 background: linear-gradient(
-                    to right,
-                    #FFE5EE,
-                    #FEF8FB,
-                    #F4E8FF
+                    135deg,
+                    #FFF8FC 40%,
+                    #F4E8FF 75%,
+                    #FDEBFA 100%
                 );
+                background-attachment: fixed;
+                isolation: isolate;
                 font-family: Arial, sans-serif;
                 color: #332A33;
                 margin: 0;
                 padding: 0;
+            }
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                z-index: -1;
+                pointer-events: none;
+                background:
+                    radial-gradient(
+                        circle at 10% 15%,
+                        rgba(255, 182, 213, 0.20),
+                        transparent 35%
+                    ),
+                    radial-gradient(
+                        circle at 90% 80%,
+                        rgba(204, 174, 255, 0.22),
+                        transparent 38%
+                    );
             }
             .site-header {
                 display: flex;
@@ -215,11 +239,31 @@
             }
             #load-stats-button,
             #back-to-voting-button {
-                padding: 11px 18px;
+                padding: 12px 22px;
                 border: none;
-                border-radius: 12px;
+                border-radius: 14px;
+                font-size: 15px;
                 font-weight: 700;
+                font-family: inherit;
                 cursor: pointer;
+                transition: all 0.25s ease;
+                box-shadow: 0 4px 10px rgba(184, 61, 107, 0.15);
+                margin: 6px;
+            }
+            #load-stats-button {
+                background: linear-gradient(135deg, #B83D6B, #D76BA0);
+                color: #FFFFFF;
+                
+            }
+            #back-to-voting-button {
+                background: linear-gradient(135deg, #F4E8FF, #FFE5EE);
+                color: #9B3568;
+                border: 1px solid #E8C5DD;
+            }
+            #load-stats-button:hover {
+                background: linear-gradient(135deg, #A52F5D, #C6538C);
+                box-shadow: 0 7px 16px rgba(184, 61, 107, 0.18);
+                transform: translateY(-2px);
             }
             #stats-container {
                 margin-top: 24px;
@@ -263,6 +307,42 @@
                 color: #A93E68;
                 font-weight: 600;
             }
+            #petal-container {
+                position: fixed;
+                inset: 0;
+                overflow: hidden;
+                z-index: -1;
+                pointer-events: none;
+            }
+            .falling-petal {
+                position: absolute;
+                top: -40px;
+                display: block;
+                opacity: 0;
+                user-select: none;
+                will-change: transform, opacity;
+                animation: petal-fall linear forwards;
+            }
+            @keyframes petal-fall {
+                0% {
+                    transform: translate3d(0, -20px, 0) rotate(0deg);
+                    opacity: 0;
+                }
+                10% {
+                    opacity: 0.75;
+                }
+                50% {
+                    transform: translate3d(45px, 50vh, 0) rotate(180deg);
+                    opacity: 0.65;
+                }
+                90% {
+                    opacity: 0.45;
+                }
+                100% {
+                    transform: translate3d(-25px, 110vh, 0) rotate(360deg);
+                    opacity: 0;
+                }
+            }
             @media (max-width: 600px) {
                 .site-header {
                     padding: 16px 5%;
@@ -287,11 +367,24 @@
                     padding: 9px 12px;
                     font-size: 13px;
                 }
+                #load-stats-button,
+                #back-to-voting-button {
+                    width: 100%;
+                    margin: 5px 0;
+                    padding: 13px 16px;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .falling-petal {
+                    display: none;
+                    animation: none;
+                }
             }
         </style>
         <script src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     </head>
     <body>
+        <div id = "petal-container" aria-hidden = "true"></div>
         <header class = "site-header" hidden>
             <div class = "brand">9A1</div>
             <div class = "header-right">
@@ -319,8 +412,12 @@
         <section id = "admin-page" hidden>
             <h2>Trang quản trị 9A1</h2>
             <p>Thống kê kết quả bình chọn 20/10</p>
-            <button id = "back-to-voting-button">Quay lại bình chọn</button>
-            <button id = "load-stats-button">Xem thống kê</button>
+            <button id = "back-to-voting-button">
+                Quay lại bình chọn
+            </button>
+            <button id = "load-stats-button">
+                Xem thống kê
+            </button>
             <p id = "admin-message" role = "status"></p>
             <div id = "stats-container"></div>
         </section>
@@ -828,6 +925,36 @@
                 document.getElementById("admin-page").hidden = true;
                 showVotingHome();
             });
+        </script>
+        <script>
+            const petalContainer = document.getElementById("petal-container");
+            if (petalContainer && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                const petalSymbols = ["🌸", "🌸", "🌸", "🌸", "🌸", "🌸"];
+                let activePetals = 0;
+                function createPetal() {
+                    if (activePetals >= 25) {
+                        return;
+                    }
+                    const petal = document.createElement("span");
+                    petal.className = "falling-petal";
+                    petal.textContent = petalSymbols[Math.floor(Math.random() * petalSymbols.length)];
+                    const size = 12 + Math.random() * 10;
+                    const duration = 9 + Math.random() * 7;
+                    petal.style.left = Math.random() * 100 + "vw";
+                    petal.style.fontSize = size + "px";
+                    petal.style.animationDuration = duration + "s";
+                    petalContainer.appendChild(petal);
+                    activePetals++;
+                    petal.addEventListener("animationend", function() {
+                        petal.remove();
+                        activePetals--;
+                    }, { once: true });
+                }
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(createPetal, i * 250);
+                }
+                setInterval(createPetal, 650);
+            }
         </script>
     </body>
 </html>
