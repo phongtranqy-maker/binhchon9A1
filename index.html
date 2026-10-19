@@ -679,7 +679,7 @@
                 const code = document.getElementById("student-code").value.trim().toLowerCase();
                 const password = document.getElementById("student-password").value;
                 const message = document.getElementById("login-message");
-                if (!/^hs\d{3}$/.test(code) && code !== "firstadmin9a1") {
+                if (!/^hs\d{3}$/.test(code) && code !== "firstadmin9a1" && code !== "gv9a1") {
                     message.textContent = "Mã học sinh phải có dạng HS0xx";
                     return;
                 }
@@ -958,3 +958,5 @@
         </script>
     </body>
 </html>
+
+
